@@ -1,8 +1,8 @@
-#include "accum.hpp"
+#include "test.h"
 using namespace std;
 int main()
 {
     accumTest();
-    cout << "Hello World" << endl;
+    testPolicy();
     return 0;
 }

@@ -1,6 +1,6 @@
 #pragma once
-#include <iostream>
 #include "accumtraits.hpp"
+#include "sumpolicy.hpp"
 
 template <typename T>
 inline typename AccumTraits<T>::AccT accum(T const* beg, T const* end)
@@ -30,16 +30,19 @@ inline typename AccumTraits<T>::AccT accumUseZero(T const* beg, T const* end)
     return total;
 }
 
-template<typename T, typename AT = AccumTraits<T>>
+template<typename T, typename Policy = SumPolicy, typename AT = AccumTraits<T>>
 class Accum
 {
     public:
     static typename AT::AccT accum(T const* beg, T const* end)
     {
+        //这样设计虽然能够使用代理，但是对于不同的代理，使用AT::zero()可能会不对
+        //例如求积的代理初始化为0则出错
+        //不同的代理会手机用不同的trait
         typename AT::AccT total = AT::zero();
         while (beg != end)
         {
-            total += *beg;
+            Policy::accumulate(total, *beg);
             ++beg;
         }
         return total;
@@ -57,19 +60,4 @@ template<typename Traits,typename T>
 inline typename Traits::AccT accumUseClass(T const* beg, T const* end)
 {
     return Accum<T, Traits>::accum(beg, end);
-}
-
-void accumTest()
-{
-    int a[] = {1, 2, 3, 4, 5};
-    float b[] = {1.1, 2.2, 3.3, 4.4, 5.5};
-    char  c[] = {"templates"};
-    double d[] = {1.1, 2.2, 3.3, 4.4, 5.5};
-    std::cout << accum(a, a + 5) << std::endl;
-    std::cout << accum(b, b + 5) << std::endl;
-    std::cout << accum(c, c + sizeof(c) - 1) << std::endl;
-
-    std::cout << accumUseClass(c, c + sizeof(c) - 1) << std::endl;
-    //如果没有特化double类型，则会在编译期报错
-    // std::cout << accumUseZero(d, d + 5) << std::endl;
 }
